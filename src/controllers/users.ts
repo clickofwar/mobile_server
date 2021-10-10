@@ -1,5 +1,4 @@
 export {};
-const axios = require("axios");
 const MongoClient = require("mongodb").MongoClient;
 const sha256 = require("js-sha256");
 const { getUrl } = require("../utils");
