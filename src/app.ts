@@ -3,12 +3,14 @@ require("dotenv").config();
 const helmet = require("helmet");
 const routes = require("./routes");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const router = express.Router();
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(helmet());
+app.use(cors());
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));

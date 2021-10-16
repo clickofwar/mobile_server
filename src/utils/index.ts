@@ -14,4 +14,6 @@ const getUrl = () => {
   }
 };
 
-module.exports = { getUrl };
+const jwtCode = process.env.JWT_TOKEN;
+
+module.exports = { getUrl, jwtCode };
