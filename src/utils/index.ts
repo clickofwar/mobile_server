@@ -25,10 +25,7 @@ const validateToken = (req, res, next) => {
   if (authorizationHeaader) {
     const token = req.headers.authorization.split(" ")[1]; // Bearer <token>
     console.log(token);
-    const options = {
-      expiresIn: "365d",
-      issuer: "randy",
-    };
+    const options = {};
     try {
       // verify makes sure that the token hasn't expired and has been issued by us
       result = jwt.verify(token, jwtCode, options);
@@ -39,14 +36,18 @@ const validateToken = (req, res, next) => {
       next();
     } catch (err) {
       // Throw an error just in case anything goes wrong with verification
-      throw new Error(err);
+      result = {
+        error: `Authentication error`,
+        status: 401,
+      };
+      res.status(401).send(result);
     }
   } else {
     result = {
       error: `Authentication error. Token required.`,
-      status: 401,
+      status: 402,
     };
-    res.status(401).send(result);
+    res.status(402).send(result);
   }
 };
 
