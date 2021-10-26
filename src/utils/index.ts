@@ -5,10 +5,10 @@ const jwtCode = process.env.JWT_TOKEN;
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const isProduction = () => {
-  if (process.env.NODE_ENV) {
-    return true;
-  } else {
+  if (process.env.DEVELOPMENT) {
     return false;
+  } else {
+    return true;
   }
 };
 
@@ -66,4 +66,4 @@ const validateToken = (req, res, next) => {
   }
 };
 
-module.exports = { getUrl, jwtCode, validateToken, sendEmail };
+module.exports = { isProduction, getUrl, jwtCode, validateToken, sendEmail };

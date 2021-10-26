@@ -4,7 +4,7 @@ const sha256 = require("js-sha256");
 const { getUrl, jwtCode } = require("../utils");
 const sgMail = require("@sendgrid/mail");
 const jwt = require("jsonwebtoken");
-const { sendEmail } = require("../utils/index");
+const { sendEmail, isProduction } = require("../utils/index");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -148,8 +148,9 @@ const sendEmailCode = async (req: any, res: any) => {
     );
 
     if (updateResponse.modifiedCount) {
+      let contact = isProduction() ? email : "mfmurray@umich.edu";
       const msg = {
-        to: "mfmurray@umich.edu", // Change to your recipient
+        to: contact, // Change to your recipient
         from: "service@clickofwar.com", // Change to your verified sender
         subject: "Click of War - Reset Password",
         text: `<strong>${randomNumber}</strong>`,
