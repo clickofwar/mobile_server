@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
 
 const jwtCode = process.env.JWT_TOKEN;
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const isProduction = () => {
   if (process.env.NODE_ENV) {
@@ -16,6 +18,19 @@ const getUrl = () => {
   } else {
     return process.env.LOCAL_URL;
   }
+};
+
+const sendEmail = async (props: any) => {
+  const { msg } = props;
+
+  sgMail
+    .send(msg)
+    .then((response) => {
+      console.log(response[0].statusCode);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 };
 
 const validateToken = (req, res, next) => {
@@ -51,4 +66,4 @@ const validateToken = (req, res, next) => {
   }
 };
 
-module.exports = { getUrl, jwtCode, validateToken };
+module.exports = { getUrl, jwtCode, validateToken, sendEmail };

@@ -2,7 +2,11 @@ export {};
 const MongoClient = require("mongodb").MongoClient;
 const sha256 = require("js-sha256");
 const { getUrl, jwtCode } = require("../utils");
-var jwt = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
+const jwt = require("jsonwebtoken");
+const { sendEmail } = require("../utils/index");
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const url = getUrl();
 
@@ -46,6 +50,8 @@ const add = async (req: any, res: any) => {
         score: 0,
         lightScore: 0,
         darkScore: 0,
+        emailCode: 123456,
+        emailCodeDate: 0,
       });
       console.log({ response3 });
       if (response3) {
@@ -66,7 +72,6 @@ const add = async (req: any, res: any) => {
 };
 
 const find = async (req: any, res: any) => {
-  console.log("body ", req.body);
   const client = await MongoClient.connect(url, {
     useNewUrlParser: true,
   }).catch((err) => {
@@ -94,7 +99,6 @@ const find = async (req: any, res: any) => {
     let collection = db.collection("users");
     let query = { email, hash };
     let response = await collection.findOne(query);
-    console.log({ response });
     if (response) {
       delete response.hash;
       response.token = token;
@@ -136,12 +140,23 @@ const sendEmailCode = async (req: any, res: any) => {
 
     const db = client.db("war");
     let collection = db.collection("users");
-    let query = { email };
-    let setParam = { emailCode: randomNumber, emailCodeDate: n };
-    let response = await collection.update(query, { $set: setParam });
 
-    if (response.modifiedCount) {
-      res.status(201).send({ randomNumber });
+    let setParam = { emailCode: randomNumber, emailCodeDate: n };
+    let updateResponse = await collection.updateOne(
+      { email },
+      { $set: setParam }
+    );
+
+    if (updateResponse.modifiedCount) {
+      const msg = {
+        to: "mfmurray@umich.edu", // Change to your recipient
+        from: "service@clickofwar.com", // Change to your verified sender
+        subject: "Click of War - Reset Password",
+        text: `<strong>${randomNumber}</strong>`,
+        html: `<strong>${randomNumber}</strong>`,
+      };
+      sendEmail({ msg });
+      res.status(201).send({ email });
     } else {
       res.status(400).send("email does not exist");
     }
@@ -153,4 +168,109 @@ const sendEmailCode = async (req: any, res: any) => {
   }
 };
 
-module.exports = { add, find, sendEmailCode };
+const checkEmailCode = async (req: any, res: any) => {
+  const client = await MongoClient.connect(url, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    res.status(404).send(err);
+    console.log(err);
+  });
+
+  if (!client) {
+    res.status(404).send("missing client");
+    return;
+  }
+
+  try {
+    const email = req.body.email;
+    const code = req.body.code;
+    const d = new Date();
+    const n = d.getTime();
+
+    if (!email || !code) {
+      res.status(400).send("Missing object");
+      return;
+    }
+
+    const db = client.db("war");
+    let collection = db.collection("users");
+
+    let setParam = { projection: { emailCode: 1, emailCodeDate: 1 } };
+    let { emailCode, emailCodeDate } = await collection.findOne(
+      { email },
+      setParam
+    );
+
+    if (emailCode && emailCodeDate && emailCode === code) {
+      console.log({ emailCode, emailCodeDate, code });
+      res.status(201).send("Code is correct");
+    } else {
+      res.status(400).send("Code is wrong");
+    }
+  } catch (err) {
+    res.status(404).send(err);
+    console.log(err);
+  } finally {
+    client.close();
+  }
+};
+
+const updatePassword = async (req: any, res: any) => {
+  const client = await MongoClient.connect(url, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    res.status(404).send(err);
+    console.log(err);
+  });
+
+  if (!client) {
+    res.status(404).send("missing client");
+    return;
+  }
+
+  try {
+    const email = req.body.email;
+    const code = req.body.code;
+    const password = req.body.password;
+    const d = new Date();
+    const n = d.getTime();
+
+    if (!email || !code || !password) {
+      res.status(400).send("Missing object");
+      return;
+    }
+
+    const hash = sha256(req.body.password);
+
+    const db = client.db("war");
+    let collection = db.collection("users");
+
+    let setParam = { projection: { emailCode: 1, emailCodeDate: 1 } };
+    let { emailCode, emailCodeDate } = await collection.findOne(
+      { email },
+      setParam
+    );
+
+    if (emailCode && emailCodeDate && emailCode === code) {
+      let passwordResponse = await collection.updateOne(
+        { email },
+        { $set: { hash } }
+      );
+
+      if (passwordResponse.acknowledged) {
+        res.status(201).send("Password has been updated");
+      } else {
+        res.status(401).send("Password is not updated");
+      }
+    } else {
+      res.status(400).send("Code is wrong");
+    }
+  } catch (err) {
+    res.status(404).send(err);
+    console.log(err);
+  } finally {
+    client.close();
+  }
+};
+
+module.exports = { add, find, sendEmailCode, checkEmailCode, updatePassword };
