@@ -202,7 +202,7 @@ const checkEmailCode = async (req: any, res: any) => {
       setParam
     );
 
-    if (emailCode && emailCodeDate && emailCode === code) {
+    if (emailCode && emailCodeDate && emailCode === parseInt(code)) {
       console.log({ emailCode, emailCodeDate, code });
       res.status(201).send("Code is correct");
     } else {
@@ -252,7 +252,7 @@ const updatePassword = async (req: any, res: any) => {
       setParam
     );
 
-    if (emailCode && emailCodeDate && emailCode === code) {
+    if (emailCode && emailCodeDate && emailCode === parseInt(code)) {
       let passwordResponse = await collection.updateOne(
         { email },
         { $set: { hash } }
