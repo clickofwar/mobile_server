@@ -1,5 +1,6 @@
 export {};
 const controller = require("../controllers/users");
+const { validateToken } = require("../utils/index");
 
 module.exports = (router: any) => {
   router.route("/users/find").post(controller.find);
@@ -7,4 +8,7 @@ module.exports = (router: any) => {
   router.route("/users/sendEmailCode").post(controller.sendEmailCode);
   router.route("/users/checkEmailCode").post(controller.checkEmailCode);
   router.route("/users/updatePassword").post(controller.updatePassword);
+  router
+    .route("/users/setNotificationId")
+    .post(validateToken, controller.setExpoId);
 };
