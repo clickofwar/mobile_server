@@ -66,4 +66,19 @@ const validateToken = (req, res, next) => {
   }
 };
 
-module.exports = { isProduction, getUrl, jwtCode, validateToken, sendEmail };
+function uniqBy(a, key) {
+  var seen = {};
+  return a.filter(function (item) {
+    var k = key(item);
+    return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+  });
+}
+
+module.exports = {
+  isProduction,
+  getUrl,
+  jwtCode,
+  validateToken,
+  sendEmail,
+  uniqBy,
+};
