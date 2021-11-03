@@ -11,4 +11,5 @@ module.exports = (router: any) => {
   router
     .route("/users/setNotificationId")
     .post(validateToken, controller.setExpoId);
+  router.route("/users/all").post(validateToken, controller.all);
 };

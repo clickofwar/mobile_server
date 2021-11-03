@@ -55,6 +55,15 @@ const add = async (req: any, res: any) => {
       });
       console.log({ response3 });
       if (response3) {
+        let contact = isProduction() ? email : "mfmurray@umich.edu";
+        const msg = {
+          to: contact, // Change to your recipient
+          from: "service@clickofwar.com", // Change to your verified sender
+          subject: "Click of War2 - Welcome",
+          text: `<strong>Welcome to Click of War ${username}</strong>`,
+          html: `<strong>Welcome to Click of War ${username}</strong>`,
+        };
+        sendEmail({ msg });
         response3.token = token;
         response3.email = email;
         response3.username = username;
@@ -317,6 +326,43 @@ const setExpoId = async (req: any, res: any) => {
   }
 };
 
+const all = async (req: any, res: any) => {
+  const client = await MongoClient.connect(url, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    res.status(404).send(err);
+    console.log(err);
+  });
+
+  if (!client) {
+    res.status(404).send("missing client");
+    return;
+  }
+
+  try {
+    const db = client.db("war");
+    let collection = db.collection("users");
+
+    let response = await collection
+      .find(
+        {
+          email: { $exists: true },
+        },
+        { projection: { email: 1, username: 1 } }
+      )
+      .toArray();
+
+    console.log({ response });
+
+    res.status(201).send(response);
+  } catch (err) {
+    res.status(404).send(err);
+    console.log(err);
+  } finally {
+    client.close();
+  }
+};
+
 module.exports = {
   add,
   find,
@@ -324,4 +370,5 @@ module.exports = {
   checkEmailCode,
   updatePassword,
   setExpoId,
+  all,
 };

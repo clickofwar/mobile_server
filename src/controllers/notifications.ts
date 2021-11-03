@@ -23,6 +23,8 @@ const send = async (req: any, res: any) => {
     let header = req.body.header;
     let data = req.body.data ? req.body.data : {};
 
+    console.log({ header, data });
+
     if (!header) {
       res.status(400).send("Missing Object");
     }
@@ -44,7 +46,7 @@ const send = async (req: any, res: any) => {
         to: notificationId,
         sound: "default",
         body: header,
-        data,
+        data: { tony: 5 },
       };
     });
     const filteredMessages = uniqBy(messages, JSON.stringify);
