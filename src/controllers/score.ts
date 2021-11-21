@@ -156,7 +156,7 @@ const updateLiveScore = async (req: any, res: any) => {
 
     let sum = { score: 0 };
     if (findResponse.length > 0) {
-      findResponse.reduce((a, b) => ({ score: a.score + b.score }));
+      sum = findResponse.reduce((a, b) => ({ score: a.score + b.score }));
     }
 
     if (score === 0) {
