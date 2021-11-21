@@ -2,6 +2,7 @@ import express from "express";
 require("dotenv").config();
 const helmet = require("helmet");
 const routes = require("./routes");
+const monitor = require("./monitors");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
@@ -30,5 +31,6 @@ app.get("/", (req, res) => {
 app.use("/api/v1", routes(router));
 
 app.listen(port, function () {
+  monitor.monitor();
   console.log(`App is listening on port ${port} !`);
 });

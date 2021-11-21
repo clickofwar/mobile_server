@@ -63,4 +63,54 @@ const add = async (req: any, res: any) => {
   }
 };
 
-module.exports = { add };
+const updateLiveScore = async (req: any, res: any) => {
+  const client = await MongoClient.connect(url, {
+    useNewUrlParser: true,
+  }).catch((err) => {
+    res.status(404).send(err);
+    console.log(err);
+  });
+
+  if (!client) {
+    res.status(404).send("missing client");
+    return;
+  }
+
+  try {
+    const score = req.body.score;
+    const username = req.body.username;
+    const d = new Date();
+    const n = d.getTime();
+
+    if (!score || !username) {
+      res.status(400).send("Missing item");
+    }
+
+    const db = client.db("war");
+    let liveScoreCollection = db.collection("liveScore");
+
+    let insertResponse = await liveScoreCollection.insertOne({
+      score,
+      username,
+      time: n,
+    });
+
+    let findResponse = await liveScoreCollection.find().toArray();
+
+    let sum = findResponse.reduce((a, b) => ({ score: a.score + b.score }));
+
+    console.log({ sum });
+    if (insertResponse.acknowledged) {
+      res.status(200).send(sum);
+    } else {
+      res.status(400).send("score was not added to live feed");
+    }
+  } catch (err) {
+    res.status(404).send(err);
+    console.log(err);
+  } finally {
+    client.close();
+  }
+};
+
+module.exports = { add, updateLiveScore };
