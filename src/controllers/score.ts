@@ -136,25 +136,32 @@ const updateLiveScore = async (req: any, res: any) => {
     const d = new Date();
     const n = d.getTime();
 
-    if (!score || !username) {
+    if ((!score && score !== 0) || !username) {
       res.status(400).send("Missing item");
     }
 
     const db = client.db("war");
     let liveScoreCollection = db.collection("liveScore");
 
-    let insertResponse = await liveScoreCollection.insertOne({
-      score,
-      username,
-      time: n,
-    });
+    let insertResponse = { acknowledged: false };
+    if (score) {
+      insertResponse = await liveScoreCollection.insertOne({
+        score,
+        username,
+        time: n,
+      });
+    }
 
     let findResponse = await liveScoreCollection.find().toArray();
 
-    let sum = findResponse.reduce((a, b) => ({ score: a.score + b.score }));
+    let sum = { score: 0 };
+    if (findResponse.length > 0) {
+      findResponse.reduce((a, b) => ({ score: a.score + b.score }));
+    }
 
-    console.log({ sum });
-    if (insertResponse.acknowledged) {
+    if (score === 0) {
+      res.status(200).send(sum);
+    } else if (insertResponse?.acknowledged && score) {
       res.status(200).send(sum);
     } else {
       res.status(400).send("score was not added to live feed");
