@@ -24,7 +24,7 @@ const cleanLiveScore = async () => {
     let liveScoreCollection = db.collection("liveScore");
 
     let deleteResponse = await liveScoreCollection.deleteMany({
-      time: { $lt: n - 1000 * 60 },
+      time: { $lt: n - 1000 * 60 * 5 },
     });
 
     if (deleteResponse.acknowledged) {

@@ -1,6 +1,7 @@
 export {};
 const MongoClient = require("mongodb").MongoClient;
 const { getUrl, jwtCode } = require("../utils");
+const { rankUser } = require("../utils/scoreUtil");
 
 const url = getUrl();
 
@@ -155,14 +156,16 @@ const updateLiveScore = async (req: any, res: any) => {
     let findResponse = await liveScoreCollection.find().toArray();
 
     let sum = { score: 0 };
+    let rank = 1;
     if (findResponse.length > 0) {
       sum = findResponse.reduce((a, b) => ({ score: a.score + b.score }));
+      rank = rankUser(findResponse, username);
     }
 
     if (score === 0) {
-      res.status(200).send(sum);
+      res.status(200).send({ score: sum.score, rank });
     } else if (insertResponse?.acknowledged && score) {
-      res.status(200).send(sum);
+      res.status(200).send({ score: sum.score, rank });
     } else {
       res.status(400).send("score was not added to live feed");
     }

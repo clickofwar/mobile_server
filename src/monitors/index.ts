@@ -11,7 +11,7 @@ const seconds5 = () => {
 
     seconds5();
     clearInterval(timerID);
-  }, 5000);
+  }, 5000 * 10);
 };
 
 module.exports = {

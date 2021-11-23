@@ -39,7 +39,7 @@ const validateToken = (req, res, next) => {
   let result;
   if (authorizationHeaader) {
     const token = req.headers.authorization.split(" ")[1]; // Bearer <token>
-    console.log(token);
+
     const options = {};
     try {
       // verify makes sure that the token hasn't expired and has been issued by us
