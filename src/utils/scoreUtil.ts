@@ -22,7 +22,11 @@ const rankUser = (array: any, user: string) => {
   });
 
   let rankOrderArray = rankArray.sort((a, b) =>
-    a.sum < b.sum ? 1 : b.sum < a.sum ? -1 : 0
+    Math.abs(a.sum) < Math.abs(b.sum)
+      ? 1
+      : Math.abs(b.sum) < Math.abs(a.sum)
+      ? -1
+      : 0
   );
 
   let index = rankOrderArray.findIndex((x) => x.username === user);
