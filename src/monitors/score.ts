@@ -1,6 +1,7 @@
 export {};
 const MongoClient = require("mongodb").MongoClient;
 const { getUrl, jwtCode } = require("../utils");
+const { main } = require("../constants/index");
 
 const url = getUrl();
 
@@ -24,7 +25,7 @@ const cleanLiveScore = async () => {
     let liveScoreCollection = db.collection("liveScore");
 
     let deleteResponse = await liveScoreCollection.deleteMany({
-      time: { $lt: n - 1000 * 20 },
+      time: { $lt: n - main.filterScoreTime * 2 },
     });
 
     if (deleteResponse.acknowledged) {

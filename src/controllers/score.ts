@@ -2,6 +2,7 @@ export {};
 const MongoClient = require("mongodb").MongoClient;
 const { getUrl, jwtCode } = require("../utils");
 const { rankUser } = require("../utils/scoreUtil");
+const { main } = require("../constants/index");
 
 const url = getUrl();
 
@@ -153,7 +154,9 @@ const updateLiveScore = async (req: any, res: any) => {
       });
     }
 
-    let findResponse = await liveScoreCollection.find().toArray();
+    let findResponse = await liveScoreCollection
+      .find({ time: { $gt: n - main.filterScoreTime } })
+      .toArray();
 
     let sum = { score: 0 };
     let rank = 1;
